@@ -1,0 +1,49 @@
+import requests
+import csv
+import os
+
+# Function to fetch CVE information for a package and keyword search
+def get_cve_info_by_package_and_keyword(package, keyword, api_key):
+    base_url = "https://services.nvd.nist.gov/rest/json/cves/1.0"
+    params = {
+        "keywordSearch": keyword,  # Keyword search in descriptions
+        "cpeMatchString": f"cpe:2.3:a:{package}:",  # Construct CPE string for the package
+    }
+    headers = {
+        "apiKey": api_key,
+    }
+
+    response = requests.get(base_url, params=params, headers=headers)
+
+    if response.status_code == 200:
+        cve_data = response.json()
+        return cve_data
+    else:
+        return None
+
+if __name__ == "__main__":
+    api_key = 'a67baf5d-285b-4977-9a91-1078d7065348'
+
+    packages_and_keywords = []
+
+    # Read package and keyword information from package_list.csv
+    with open("package_list.csv", "r") as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            package = row["package"]
+            keyword = row["keyword"]
+            packages_and_keywords.append((package, keyword))
+
+    for package, keyword in packages_and_keywords:
+        cve_info = get_cve_info_by_package_and_keyword(package, keyword, api_key)
+
+        if 'result' in cve_info:
+            print(f"CVEs for '{package}' mentioning '{keyword}':")
+            for cve_entry in cve_info['result']['CVE_Items']:
+                cve_id = cve_entry['cve']['CVE_data_meta']['ID']
+                description = cve_entry['cve']['description']['description_data'][0]['value']
+                print(f"CVE ID: {cve_id}")
+                print(f"Description: {description}")
+                print("-" * 50)
+        else:
+            print(f"No relevant CVE information found for '{package}' mentioning '{keyword}'")
