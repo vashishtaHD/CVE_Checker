@@ -11,7 +11,7 @@ Vulnerability Checker tool that leverages CVE scores and package information to 
 
 ## Usage/Examples
 
-```javascript
+```
 -> Insert List of packages and Dependencies from csv file
 -> Run cve_checker.py
 ```
